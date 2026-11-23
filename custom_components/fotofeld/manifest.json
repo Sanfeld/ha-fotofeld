@@ -1,0 +1,12 @@
+{
+  "domain": "fotofeld",
+  "name": "Fotofeld",
+  "codeowners": ["@Sanfeld"],
+  "config_flow": true,
+  "documentation": "https://github.com/Sanfeld/ha-fotofeld",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Sanfeld/ha-fotofeld/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

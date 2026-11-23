@@ -1,0 +1,260 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Fotofeld",
+        "description": "The Fotofeld computer's address and the pairing code shown in section 5 of the Fotofeld window.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "code": "Pairing code"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New pairing code",
+        "description": "Fotofeld did not accept the pairing code. Enter the code shown in section 5 of the Fotofeld window.",
+        "data": {
+          "code": "Pairing code"
+        }
+      },
+      "reconfigure": {
+        "title": "Fotofeld",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "code": "Pairing code"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach Fotofeld. Is the Fotofeld service running, and is port 8765 open in its firewall?",
+      "invalid_auth": "Wrong pairing code.",
+      "old_version": "This Fotofeld is too old for Home Assistant. Update Fotofeld on that computer."
+    },
+    "abort": {
+      "already_configured": "This Fotofeld is already set up.",
+      "reauth_successful": "The pairing code is updated.",
+      "reconfigure_successful": "Fotofeld is updated.",
+      "unique_id_mismatch": "That is a different Fotofeld computer."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fotofeld",
+        "data": {
+          "photo_minutes": "Change photos every (0 = only on request)",
+          "photo_size": "Photo size (longest side)",
+          "overdue_days": "A phone is overdue after"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "library_files": {
+        "name": "Files in library"
+      },
+      "sorted_files": {
+        "name": "Sorted files"
+      },
+      "not_sure_files": {
+        "name": "Not sure"
+      },
+      "duplicate_files": {
+        "name": "Duplicates"
+      },
+      "last_filed": {
+        "name": "Last filed"
+      },
+      "activity": {
+        "name": "Activity"
+      },
+      "usb_import": {
+        "name": "USB import",
+        "state": {
+          "idle": "Idle",
+          "importing": "Importing"
+        }
+      },
+      "last_usb_import": {
+        "name": "Last USB import"
+      },
+      "last_sort": {
+        "name": "Last sort"
+      },
+      "disk_free": {
+        "name": "Disk free"
+      },
+      "disk_used": {
+        "name": "Disk used"
+      },
+      "disk_health": {
+        "name": "Disk health"
+      },
+      "disk_read_errors": {
+        "name": "Disk read errors"
+      },
+      "disk_temperature": {
+        "name": "Disk temperature"
+      },
+      "vision_progress": {
+        "name": "Analysis progress"
+      },
+      "last_analysis": {
+        "name": "Last analysis"
+      },
+      "unnamed_face_groups": {
+        "name": "Faces to name"
+      },
+      "people": {
+        "name": "Named people"
+      },
+      "phone_backup": {
+        "name": "{phone} last backup"
+      }
+    },
+    "binary_sensor": {
+      "busy": {
+        "name": "Busy"
+      },
+      "disk_problem": {
+        "name": "Disk problem"
+      },
+      "vision_running": {
+        "name": "Analyzing"
+      },
+      "phone_overdue": {
+        "name": "{phone} backup overdue"
+      },
+      "any_phone_overdue": {
+        "name": "Phone backup overdue"
+      }
+    },
+    "switch": {
+      "paused": {
+        "name": "Paused"
+      }
+    },
+    "button": {
+      "analyze": {
+        "name": "Analyze pictures"
+      },
+      "next_photos": {
+        "name": "Show new photos"
+      }
+    },
+    "image": {
+      "on_this_day": {
+        "name": "On this day"
+      },
+      "random_photo": {
+        "name": "Random photo"
+      },
+      "latest_photo": {
+        "name": "Latest photo"
+      },
+      "photo_frame": {
+        "name": "Photo frame"
+      },
+      "person_photo": {
+        "name": "Photo of {person}"
+      }
+    },
+    "event": {
+      "activity_event": {
+        "name": "Fotofeld",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "service_started": "Service started",
+              "usb_started": "USB import started",
+              "usb_finished": "USB import finished",
+              "disk_problem": "Disk problem",
+              "vision_finished": "Analysis finished",
+              "new_faces": "New faces to name",
+              "phone_overdue": "Phone backup overdue",
+              "paused": "Paused",
+              "resumed": "Resumed"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "photo_mode": {
+      "options": {
+        "random": "Random",
+        "onthisday": "On this day",
+        "latest": "Latest",
+        "person": "Person",
+        "subject": "Subject"
+      }
+    }
+  },
+  "services": {
+    "next_photo": {
+      "name": "Next photo",
+      "description": "Shows a new photo now. Give a mode (and a name for person or subject) to change what this photo entity shows.",
+      "fields": {
+        "mode": {
+          "name": "Mode",
+          "description": "Which photos."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Person or subject, as named in Fotofeld."
+        }
+      }
+    },
+    "find_photo": {
+      "name": "Find photo",
+      "description": "Returns a matching photo's date, people and subjects (for scripts and notifications).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Which Fotofeld."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Which photos."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Person or subject."
+        }
+      }
+    },
+    "analyze": {
+      "name": "Analyze pictures",
+      "description": "Runs Fotofeld Vision on new pictures: look-alikes, not-photos, subjects and people.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Which Fotofeld (all if empty)."
+        }
+      }
+    },
+    "pause": {
+      "name": "Pause",
+      "description": "Pauses USB, inbox and phone work.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Which Fotofeld (all if empty)."
+        }
+      }
+    },
+    "resume": {
+      "name": "Resume",
+      "description": "Resumes the Fotofeld service.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Which Fotofeld (all if empty)."
+        }
+      }
+    }
+  }
+}

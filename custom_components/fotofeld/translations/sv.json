@@ -1,0 +1,260 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Fotofeld",
+        "description": "Fotofeld-datorns adress och parkopplingskoden som visas i avsnitt 5 i Fotofeld-fönstret.",
+        "data": {
+          "host": "Värd",
+          "port": "Port",
+          "code": "Parkopplingskod"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ny parkopplingskod",
+        "description": "Fotofeld godtog inte parkopplingskoden. Ange koden som visas i avsnitt 5 i Fotofeld-fönstret.",
+        "data": {
+          "code": "Parkopplingskod"
+        }
+      },
+      "reconfigure": {
+        "title": "Fotofeld",
+        "data": {
+          "host": "Värd",
+          "port": "Port",
+          "code": "Parkopplingskod"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan inte nå Fotofeld. Körs Fotofeld-tjänsten, och är port 8765 öppen i brandväggen?",
+      "invalid_auth": "Fel parkopplingskod.",
+      "old_version": "Den här Fotofeld är för gammal för Home Assistant. Uppdatera Fotofeld på den datorn."
+    },
+    "abort": {
+      "already_configured": "Den här Fotofeld är redan inlagd.",
+      "reauth_successful": "Parkopplingskoden är uppdaterad.",
+      "reconfigure_successful": "Fotofeld är uppdaterad.",
+      "unique_id_mismatch": "Det är en annan Fotofeld-dator."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fotofeld",
+        "data": {
+          "photo_minutes": "Byt foton var (0 = bara på begäran)",
+          "photo_size": "Fotostorlek (längsta sidan)",
+          "overdue_days": "En telefon är försenad efter"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "library_files": {
+        "name": "Filer i biblioteket"
+      },
+      "sorted_files": {
+        "name": "Sorterade filer"
+      },
+      "not_sure_files": {
+        "name": "Osäkra"
+      },
+      "duplicate_files": {
+        "name": "Dubbletter"
+      },
+      "last_filed": {
+        "name": "Senast arkiverad"
+      },
+      "activity": {
+        "name": "Aktivitet"
+      },
+      "usb_import": {
+        "name": "USB-import",
+        "state": {
+          "idle": "Vilar",
+          "importing": "Importerar"
+        }
+      },
+      "last_usb_import": {
+        "name": "Senaste USB-import"
+      },
+      "last_sort": {
+        "name": "Senaste sortering"
+      },
+      "disk_free": {
+        "name": "Ledigt på disken"
+      },
+      "disk_used": {
+        "name": "Använt på disken"
+      },
+      "disk_health": {
+        "name": "Diskens hälsa"
+      },
+      "disk_read_errors": {
+        "name": "Läsfel på disken"
+      },
+      "disk_temperature": {
+        "name": "Disktemperatur"
+      },
+      "vision_progress": {
+        "name": "Analysförlopp"
+      },
+      "last_analysis": {
+        "name": "Senaste analys"
+      },
+      "unnamed_face_groups": {
+        "name": "Ansikten att namnge"
+      },
+      "people": {
+        "name": "Namngivna personer"
+      },
+      "phone_backup": {
+        "name": "{phone} senaste säkerhetskopia"
+      }
+    },
+    "binary_sensor": {
+      "busy": {
+        "name": "Upptagen"
+      },
+      "disk_problem": {
+        "name": "Diskproblem"
+      },
+      "vision_running": {
+        "name": "Analyserar"
+      },
+      "phone_overdue": {
+        "name": "{phone} säkerhetskopia försenad"
+      },
+      "any_phone_overdue": {
+        "name": "Telefonsäkerhetskopia försenad"
+      }
+    },
+    "switch": {
+      "paused": {
+        "name": "Pausad"
+      }
+    },
+    "button": {
+      "analyze": {
+        "name": "Analysera bilder"
+      },
+      "next_photos": {
+        "name": "Visa nya foton"
+      }
+    },
+    "image": {
+      "on_this_day": {
+        "name": "Den här dagen"
+      },
+      "random_photo": {
+        "name": "Slumpvis bild"
+      },
+      "latest_photo": {
+        "name": "Senaste bild"
+      },
+      "photo_frame": {
+        "name": "Fotoram"
+      },
+      "person_photo": {
+        "name": "Bild på {person}"
+      }
+    },
+    "event": {
+      "activity_event": {
+        "name": "Fotofeld",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "service_started": "Tjänsten startade",
+              "usb_started": "USB-import startade",
+              "usb_finished": "USB-import klar",
+              "disk_problem": "Diskproblem",
+              "vision_finished": "Analys klar",
+              "new_faces": "Nya ansikten att namnge",
+              "phone_overdue": "Telefonsäkerhetskopia försenad",
+              "paused": "Pausad",
+              "resumed": "Återupptagen"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "photo_mode": {
+      "options": {
+        "random": "Slumpvis",
+        "onthisday": "Den här dagen",
+        "latest": "Senaste",
+        "person": "Person",
+        "subject": "Motiv"
+      }
+    }
+  },
+  "services": {
+    "next_photo": {
+      "name": "Nästa bild",
+      "description": "Visar en ny bild nu. Ange ett läge (och ett namn för person eller motiv) för att ändra vad bilden visar.",
+      "fields": {
+        "mode": {
+          "name": "Läge",
+          "description": "Vilka bilder."
+        },
+        "name": {
+          "name": "Namn",
+          "description": "Person eller motiv, som i Fotofeld."
+        }
+      }
+    },
+    "find_photo": {
+      "name": "Hitta bild",
+      "description": "Returnerar datum, personer och motiv för en matchande bild (för skript och notiser).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Vilken Fotofeld."
+        },
+        "mode": {
+          "name": "Läge",
+          "description": "Vilka bilder."
+        },
+        "name": {
+          "name": "Namn",
+          "description": "Person eller motiv."
+        }
+      }
+    },
+    "analyze": {
+      "name": "Analysera bilder",
+      "description": "Kör Fotofeld Vision på nya bilder: likadana bilder, icke-foton, motiv och personer.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Vilken Fotofeld (alla om tomt)."
+        }
+      }
+    },
+    "pause": {
+      "name": "Pausa",
+      "description": "Pausar USB-, inkorgs- och telefonarbete.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Vilken Fotofeld (alla om tomt)."
+        }
+      }
+    },
+    "resume": {
+      "name": "Återuppta",
+      "description": "Återupptar Fotofeld-tjänsten.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fotofeld",
+          "description": "Vilken Fotofeld (alla om tomt)."
+        }
+      }
+    }
+  }
+}

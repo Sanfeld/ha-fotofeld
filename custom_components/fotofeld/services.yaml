@@ -1,0 +1,49 @@
+next_photo:
+  target:
+    entity:
+      integration: fotofeld
+      domain: image
+  fields:
+    mode:
+      selector:
+        select:
+          translation_key: photo_mode
+          options: [random, onthisday, latest, person, subject]
+    name:
+      example: Soli
+      selector:
+        text:
+find_photo:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: fotofeld
+    mode:
+      required: true
+      default: onthisday
+      selector:
+        select:
+          translation_key: photo_mode
+          options: [random, onthisday, latest, person, subject]
+    name:
+      selector:
+        text:
+analyze:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: fotofeld
+pause:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: fotofeld
+resume:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: fotofeld

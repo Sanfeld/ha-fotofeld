@@ -1,0 +1,87 @@
+# Example automations for Fotofeld. Entity names start with "fotofeld_<server>_"; here the
+# Windows computer is called SERVER. Replace "server" with yours, and notify.mobile_app_... with your phone.
+
+- alias: Fotofeld - USB import finished
+  triggers:
+    - trigger: event
+      event_type: fotofeld_event
+      event_data:
+        type: usb_finished
+  actions:
+    - action: notify.mobile_app_scotts_phone
+      data:
+        title: Fotofeld
+        message: >-
+          {{ trigger.event.data.name }} ({{ trigger.event.data.drive }}):
+          {% if trigger.event.data.result == 'done' %}{{ trigger.event.data.copied }} new pictures,
+          {{ trigger.event.data.alreadyThere }} already in the library. Safe to remove.
+          {% elif trigger.event.data.result == 'removed' %}removed before it was finished; it will be scanned again.
+          {% else %}not everything could be read ({{ trigger.event.data.errors }} errors).{% endif %}
+
+- alias: Fotofeld - disk problem
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.fotofeld_server_disk_problem
+      to: "on"
+  actions:
+    - action: notify.mobile_app_scotts_phone
+      data:
+        title: Fotofeld disk problem
+        message: >-
+          {{ state_attr('sensor.fotofeld_server_disk_health', 'model') }}
+          ({{ state_attr('sensor.fotofeld_server_disk_health', 'drive') }}):
+          {{ states('sensor.fotofeld_server_disk_health') }},
+          {{ states('sensor.fotofeld_server_disk_read_errors') }} read errors. Check the backup.
+
+- alias: Fotofeld - phone has not backed up
+  triggers:
+    - trigger: event
+      event_type: fotofeld_event
+      event_data:
+        type: phone_overdue
+  actions:
+    - action: notify.mobile_app_scotts_phone
+      data:
+        title: Fotofeld
+        message: "{{ trigger.event.data.phone }} has not backed up its pictures since {{ trigger.event.data.lastBackup[:10] }}."
+
+- alias: Fotofeld - analyze new pictures at night
+  triggers:
+    - trigger: time
+      at: "02:30:00"
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.fotofeld_server_analyzing
+      state: "off"
+  actions:
+    - action: fotofeld.analyze
+
+- alias: Fotofeld - new faces to name
+  triggers:
+    - trigger: event
+      event_type: fotofeld_event
+      event_data:
+        type: new_faces
+  actions:
+    - action: notify.mobile_app_scotts_phone
+      data:
+        title: Fotofeld
+        message: "{{ trigger.event.data.unnamedFaceGroups }} groups of faces are waiting for names (People... in the Fotofeld window)."
+
+- alias: Fotofeld - pause during game night
+  triggers:
+    - trigger: state
+      entity_id: input_boolean.game_night
+  actions:
+    - action: "switch.turn_{{ 'on' if trigger.to_state.state == 'on' else 'off' }}"
+      target:
+        entity_id: switch.fotofeld_server_paused
+
+- alias: Fotofeld - morning memory on the kitchen panel
+  triggers:
+    - trigger: time
+      at: "07:00:00"
+  actions:
+    - action: fotofeld.next_photo
+      target:
+        entity_id: image.fotofeld_server_on_this_day

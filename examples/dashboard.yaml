@@ -1,0 +1,66 @@
+# A Fotofeld dashboard view. Paste into a dashboard's raw configuration editor (under "views:").
+title: Photos
+path: photos
+icon: mdi:image-multiple
+cards:
+  - type: picture-entity
+    entity: image.fotofeld_server_on_this_day
+    name: On this day
+    show_state: false
+    tap_action:
+      action: perform-action
+      perform_action: fotofeld.next_photo
+      target:
+        entity_id: image.fotofeld_server_on_this_day
+  - type: markdown
+    content: >-
+      {% set p = 'image.fotofeld_server_on_this_day' %}
+      {% if state_attr(p, 'years_ago') %}**{{ state_attr(p, 'years_ago') }} years ago**
+      ({{ state_attr(p, 'date') }}){% if state_attr(p, 'people') %} · {{ state_attr(p, 'people') | join(', ') }}{% endif %}
+      {% else %}No pictures from this day yet.{% endif %}
+  - type: picture-entity
+    entity: image.fotofeld_server_photo_frame
+    name: Photo frame
+    show_state: false
+    tap_action:
+      action: perform-action
+      perform_action: fotofeld.next_photo
+      target:
+        entity_id: image.fotofeld_server_photo_frame
+  - type: entities
+    title: Library
+    entities:
+      - sensor.fotofeld_server_activity
+      - sensor.fotofeld_server_files_in_library
+      - sensor.fotofeld_server_last_filed
+      - sensor.fotofeld_server_usb_import
+      - sensor.fotofeld_server_last_usb_import
+      - sensor.fotofeld_server_not_sure
+      - sensor.fotofeld_server_duplicates
+      - switch.fotofeld_server_paused
+  - type: entities
+    title: Phones
+    entities:
+      - binary_sensor.fotofeld_server_phone_backup_overdue
+      - sensor.fotofeld_server_scott_s_phone_last_backup
+      - sensor.fotofeld_server_soli_s_phone_last_backup
+      - sensor.fotofeld_server_ma_s_phone_last_backup
+  - type: entities
+    title: Disk
+    entities:
+      - binary_sensor.fotofeld_server_disk_problem
+      - sensor.fotofeld_server_disk_health
+      - sensor.fotofeld_server_disk_read_errors
+      - sensor.fotofeld_server_disk_free
+      - sensor.fotofeld_server_disk_used
+      - sensor.fotofeld_server_disk_temperature
+  - type: entities
+    title: Fotofeld Vision
+    entities:
+      - binary_sensor.fotofeld_server_analyzing
+      - sensor.fotofeld_server_analysis_progress
+      - sensor.fotofeld_server_last_analysis
+      - sensor.fotofeld_server_faces_to_name
+      - sensor.fotofeld_server_named_people
+      - button.fotofeld_server_analyze_pictures
+      - button.fotofeld_server_show_new_photos
