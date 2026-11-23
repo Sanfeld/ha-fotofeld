@@ -10,13 +10,16 @@ import voluptuous as vol
 from homeassistant.components.image import ImageEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv, entity_platform
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util, slugify
 
 from .api import FotofeldError, FotofeldNotFound
 from .button import SIGNAL_NEXT_PHOTOS
+
+SIGNAL_FRAME_SET = "fotofeld_frame_set_{}"          # select -> photo frame: (mode, name)
+SIGNAL_FRAME_CHANGED = "fotofeld_frame_changed_{}"  # photo frame -> select
 from .const import CONF_PHOTO_MINUTES, CONF_PHOTO_SIZE, DEFAULT_PHOTO_MINUTES, DEFAULT_PHOTO_SIZE, PHOTO_MODES
 from .coordinator import FotofeldConfigEntry
 from .entity import FotofeldEntity
@@ -61,6 +64,7 @@ class FotofeldPhoto(FotofeldEntity, ImageEntity):
         self._size = int(entry.options.get(CONF_PHOTO_SIZE, DEFAULT_PHOTO_SIZE))
         self._minutes = int(entry.options.get(CONF_PHOTO_MINUTES, DEFAULT_PHOTO_MINUTES))
         self._last_day = None
+        self._is_frame = key == "photo_frame"
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -68,6 +72,9 @@ class FotofeldPhoto(FotofeldEntity, ImageEntity):
             self.hass, SIGNAL_NEXT_PHOTOS.format(self._entry.entry_id), self._next_from_signal))
         if self._minutes > 0:
             self.async_on_remove(async_track_time_interval(self.hass, self._on_timer, timedelta(minutes=self._minutes)))
+        if self._is_frame:
+            self.async_on_remove(async_dispatcher_connect(
+                self.hass, SIGNAL_FRAME_SET.format(self._entry.entry_id), self._frame_set))
         if self.mode == "onthisday":    # a new day: new memories, even with timed changes off
             self.async_on_remove(async_track_time_interval(self.hass, self._on_day_check, timedelta(minutes=5)))
         self.hass.async_create_task(self._pick())
@@ -83,12 +90,19 @@ class FotofeldPhoto(FotofeldEntity, ImageEntity):
         if dt_util.now().date() != self._last_day:
             await self._pick()
 
+    @callback
+    def _frame_set(self, mode: str, name: str | None) -> None:
+        self.hass.async_create_task(self.async_next_photo(mode, name))
+
     async def async_next_photo(self, mode: str | None = None, name: str | None = None) -> None:
         """Entity action fotofeld.next_photo: a new photo now; mode/name change what this entity shows."""
         if mode:
             self.mode, self.name_filter = mode, name
         elif name:
             self.name_filter = name
+        if self._is_frame:
+            self._entry.runtime_data.frame = {"mode": self.mode, "name": self.name_filter}
+            async_dispatcher_send(self.hass, SIGNAL_FRAME_CHANGED.format(self._entry.entry_id))
         await self._pick()
 
     async def _pick(self) -> None:

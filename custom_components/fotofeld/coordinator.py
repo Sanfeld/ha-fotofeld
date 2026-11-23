@@ -36,6 +36,7 @@ class FotofeldData:
     info: dict
     people: list[str] = field(default_factory=list)
     subjects: list[str] = field(default_factory=list)
+    frame: dict = field(default_factory=lambda: {"mode": "random", "name": None})
 
 
 def parse_time(value: Any) -> datetime | None:

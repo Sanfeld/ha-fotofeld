@@ -180,6 +180,16 @@
           }
         }
       }
+    },
+    "select": {
+      "frame_shows": {
+        "name": "Fotoram visar",
+        "state": {
+          "random": "Slumpvis",
+          "onthisday": "Den här dagen",
+          "latest": "Senaste"
+        }
+      }
     }
   },
   "selector": {

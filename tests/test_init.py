@@ -116,3 +116,19 @@ async def test_diagnostics(hass: HomeAssistant, setup):
     from custom_components.fotofeld.diagnostics import async_get_config_entry_diagnostics
     d = await async_get_config_entry_diagnostics(hass, setup)
     assert d["entry"]["code"] == "**REDACTED**"
+
+
+async def test_frame_select(hass: HomeAssistant, setup, fotofeld):
+    sel = "select.fotofeld_server_photo_frame_shows"
+    assert hass.states.get(sel).state == "random"
+    assert "Person: Soli" in hass.states.get(sel).attributes["options"]
+    await hass.services.async_call("select", "select_option", {"entity_id": sel, "option": "Person: Soli"}, blocking=True)
+    await hass.async_block_till_done()
+    frame = hass.states.get("image.fotofeld_server_photo_frame")
+    assert frame.attributes["mode"] == "person"
+    assert frame.attributes["filter"] == "Soli"
+    assert hass.states.get(sel).state == "Person: Soli"
+    # next_photo on the frame updates the select too
+    await hass.services.async_call(DOMAIN, "next_photo", {"mode": "onthisday"},
+                                   target={"entity_id": "image.fotofeld_server_photo_frame"}, blocking=True)
+    assert hass.states.get(sel).state == "onthisday"

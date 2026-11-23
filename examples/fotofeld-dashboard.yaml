@@ -1,0 +1,744 @@
+# Fotofeld dashboard: everything the integration can show and do, with built-in cards only.
+#
+# 1. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch, name it "Fotofeld" (icon mdi:image-multiple).
+# 2. Open it, pencil -> three dots -> Raw configuration editor, replace everything with this file, Save.
+#
+# Entity names start with fotofeld_<computer name>_. This file uses "fotofeld_server_"; if your Fotofeld
+# computer has another name, search and replace "fotofeld_server_" with yours before you paste.
+# Phone cards are for Scott's, Soli's and Ma's phone; add or remove to match yours.
+
+title: Fotofeld
+views:
+  # ----------------------------------------------------------------------------------------------
+  - title: Overview
+    path: overview
+    icon: mdi:view-dashboard
+    type: sections
+    max_columns: 4
+    badges:
+      - type: entity
+        entity: sensor.fotofeld_server_activity
+        show_name: false
+        color: blue
+      - type: entity
+        entity: switch.fotofeld_server_paused
+        show_state: true
+        visibility:
+          - condition: state
+            entity: switch.fotofeld_server_paused
+            state: "on"
+      - type: entity
+        entity: binary_sensor.fotofeld_server_disk_problem
+        color: red
+        visibility:
+          - condition: state
+            entity: binary_sensor.fotofeld_server_disk_problem
+            state: "on"
+      - type: entity
+        entity: binary_sensor.fotofeld_server_phone_backup_overdue
+        color: orange
+        visibility:
+          - condition: state
+            entity: binary_sensor.fotofeld_server_phone_backup_overdue
+            state: "on"
+      - type: entity
+        entity: sensor.fotofeld_server_analysis_progress
+        color: purple
+        visibility:
+          - condition: state
+            entity: binary_sensor.fotofeld_server_analyzing
+            state: "on"
+      - type: entity
+        entity: sensor.fotofeld_server_usb_import
+        color: teal
+        visibility:
+          - condition: state
+            entity: sensor.fotofeld_server_usb_import
+            state: importing
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: On this day
+            icon: mdi:calendar-heart
+            badges:
+              - type: entity
+                entity: image.fotofeld_server_on_this_day
+                show_state: false
+                show_icon: true
+                tap_action:
+                  action: perform-action
+                  perform_action: fotofeld.next_photo
+                  target:
+                    entity_id: image.fotofeld_server_on_this_day
+          - type: picture-entity
+            entity: image.fotofeld_server_on_this_day
+            show_name: false
+            show_state: false
+            grid_options:
+              columns: full
+            tap_action:
+              action: perform-action
+              perform_action: fotofeld.next_photo
+              target:
+                entity_id: image.fotofeld_server_on_this_day
+            hold_action:
+              action: more-info
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set p = 'image.fotofeld_server_on_this_day' %}
+              {% if state_attr(p, 'date') %}
+              **{{ state_attr(p, 'years_ago') }} years ago** · {{ state_attr(p, 'date') }}
+              {%- if state_attr(p, 'people') %} · {{ state_attr(p, 'people') | join(', ') }}{% endif %}
+              {%- if state_attr(p, 'subjects') %} · {{ state_attr(p, 'subjects') | join(', ') }}{% endif %}
+              {% else %}
+              No pictures from this day yet. (On this day needs Fotofeld Vision: press *Analyze pictures*.)
+              {% endif %}
+
+              <sub>Tap the photo for another one.</sub>
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Control
+            icon: mdi:tune-variant
+          - type: tile
+            entity: sensor.fotofeld_server_activity
+            name: Right now
+            grid_options:
+              columns: full
+          - type: tile
+            entity: switch.fotofeld_server_paused
+            name: Pause Fotofeld
+            icon: mdi:pause-circle
+            features_position: inline
+            features:
+              - type: toggle
+          - type: tile
+            entity: binary_sensor.fotofeld_server_busy
+            name: Busy
+          - type: tile
+            entity: button.fotofeld_server_analyze_pictures
+            name: Analyze pictures
+            icon: mdi:image-search
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_analyze_pictures
+              confirmation:
+                text: Run Fotofeld Vision on new pictures now? It uses the graphics card for a while.
+          - type: tile
+            entity: button.fotofeld_server_show_new_photos
+            name: New photos everywhere
+            icon: mdi:image-refresh
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_show_new_photos
+          - type: gauge
+            entity: sensor.fotofeld_server_analysis_progress
+            name: Analyzing pictures
+            min: 0
+            max: 100
+            needle: false
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_analyzing
+                state: "on"
+          - type: tile
+            entity: sensor.fotofeld_server_usb_import
+            name: USB import
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: sensor.fotofeld_server_usb_import
+                state: importing
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Needs attention
+            icon: mdi:alert-circle-outline
+            visibility:
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.fotofeld_server_disk_problem
+                    state: "on"
+                  - condition: state
+                    entity: binary_sensor.fotofeld_server_phone_backup_overdue
+                    state: "on"
+                  - condition: numeric_state
+                    entity: sensor.fotofeld_server_faces_to_name
+                    above: 0
+                  - condition: numeric_state
+                    entity: sensor.fotofeld_server_not_sure
+                    above: 0
+          - type: tile
+            entity: binary_sensor.fotofeld_server_disk_problem
+            name: Disk problem
+            color: red
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_disk_problem
+                state: "on"
+          - type: markdown
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_disk_problem
+                state: "on"
+            content: >-
+              **{{ state_attr('sensor.fotofeld_server_disk_health', 'model') }}
+              ({{ state_attr('sensor.fotofeld_server_disk_health', 'drive') }})**:
+              {{ states('sensor.fotofeld_server_disk_health') }},
+              {{ states('sensor.fotofeld_server_disk_read_errors') }} read errors.
+              Copy the Fotofeld folder to a new disk soon.
+          - type: tile
+            entity: binary_sensor.fotofeld_server_phone_backup_overdue
+            name: Phone not backing up
+            color: orange
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_phone_backup_overdue
+                state: "on"
+          - type: markdown
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_phone_backup_overdue
+                state: "on"
+            content: >-
+              {{ state_attr('binary_sensor.fotofeld_server_phone_backup_overdue', 'phones') | join(', ') }}:
+              open the Fotofeld app and tap **Sync now** at home.
+          - type: tile
+            entity: sensor.fotofeld_server_faces_to_name
+            name: Faces to name
+            icon: mdi:face-recognition
+            color: purple
+            visibility:
+              - condition: numeric_state
+                entity: sensor.fotofeld_server_faces_to_name
+                above: 0
+          - type: tile
+            entity: sensor.fotofeld_server_not_sure
+            name: Not sure of the date
+            icon: mdi:calendar-question
+            visibility:
+              - condition: numeric_state
+                entity: sensor.fotofeld_server_not_sure
+                above: 0
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Library
+            icon: mdi:folder-image
+          - type: tile
+            entity: sensor.fotofeld_server_files_in_library
+            name: All files
+            icon: mdi:image-multiple
+          - type: tile
+            entity: sensor.fotofeld_server_sorted_files
+            name: Sorted
+            icon: mdi:folder-check
+          - type: tile
+            entity: sensor.fotofeld_server_last_filed
+            name: Last filed
+            icon: mdi:clock-check-outline
+          - type: tile
+            entity: sensor.fotofeld_server_duplicates
+            name: Duplicates
+            icon: mdi:content-duplicate
+          - type: tile
+            entity: sensor.fotofeld_server_disk_free
+            name: Disk free
+            icon: mdi:harddisk
+          - type: tile
+            entity: sensor.fotofeld_server_named_people
+            name: People
+            icon: mdi:account-group
+          - type: statistics-graph
+            title: Library growth
+            entities:
+              - entity: sensor.fotofeld_server_files_in_library
+                name: Files
+            stat_types: [max]
+            chart_type: line
+            period: day
+            days_to_show: 90
+            hide_legend: true
+            grid_options:
+              columns: full
+
+  # ----------------------------------------------------------------------------------------------
+  - title: Photos
+    path: photos
+    icon: mdi:image-frame
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Photo frame
+            icon: mdi:image-frame
+          - type: tile
+            entity: select.fotofeld_server_photo_frame_shows
+            name: Shows
+            grid_options:
+              columns: full
+            features_position: bottom
+            features:
+              - type: select-options
+          - type: picture-entity
+            entity: image.fotofeld_server_photo_frame
+            show_name: false
+            show_state: false
+            grid_options:
+              columns: full
+            tap_action:
+              action: perform-action
+              perform_action: fotofeld.next_photo
+              target:
+                entity_id: image.fotofeld_server_photo_frame
+            hold_action:
+              action: more-info
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set p = 'image.fotofeld_server_photo_frame' %}
+              {% if state_attr(p, 'date') %}
+              **{{ state_attr(p, 'date') }}**
+              {%- if state_attr(p, 'years_ago') %} ({{ state_attr(p, 'years_ago') }} years ago){% endif %}
+              {%- if state_attr(p, 'people') %} · {{ state_attr(p, 'people') | join(', ') }}{% endif %}
+              {%- if state_attr(p, 'subjects') %} · {{ state_attr(p, 'subjects') | join(', ') }}{% endif %}
+              {% if state_attr(p, 'matches') %}<br><sub>one of {{ state_attr(p, 'matches') }} · {{ state_attr(p, 'path') }}</sub>{% endif %}
+              {% else %}
+              Nothing matches yet.
+              {% endif %}
+          - type: button
+            name: Another
+            icon: mdi:shuffle-variant
+            grid_options:
+              columns: 4
+              rows: 2
+            tap_action:
+              action: perform-action
+              perform_action: fotofeld.next_photo
+              target:
+                entity_id: image.fotofeld_server_photo_frame
+          - type: button
+            name: On this day
+            icon: mdi:calendar-heart
+            grid_options:
+              columns: 4
+              rows: 2
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.fotofeld_server_photo_frame_shows
+              data:
+                option: onthisday
+          - type: button
+            name: Newest
+            icon: mdi:new-box
+            grid_options:
+              columns: 4
+              rows: 2
+            tap_action:
+              action: perform-action
+              perform_action: select.select_option
+              target:
+                entity_id: select.fotofeld_server_photo_frame_shows
+              data:
+                option: latest
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Random
+            icon: mdi:dice-multiple
+          - type: picture-entity
+            entity: image.fotofeld_server_random_photo
+            show_name: false
+            show_state: false
+            tap_action:
+              action: perform-action
+              perform_action: fotofeld.next_photo
+              target:
+                entity_id: image.fotofeld_server_random_photo
+          - type: heading
+            heading: Newest
+            icon: mdi:new-box
+          - type: picture-entity
+            entity: image.fotofeld_server_latest_photo
+            show_name: false
+            show_state: false
+            tap_action:
+              action: more-info
+          - type: markdown
+            content: >-
+              Each named person also has a photo entity
+              (image.fotofeld_server_photo_of_*). Add them here with
+              *Edit → Add card → Picture entity* after naming people in Fotofeld Vision.
+
+  # ----------------------------------------------------------------------------------------------
+  - title: Phones
+    path: phones
+    icon: mdi:cellphone-arrow-down
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Scott's phone
+            icon: mdi:cellphone
+          - type: tile
+            entity: sensor.fotofeld_server_scott_s_phone_last_backup
+            name: Last backup
+          - type: tile
+            entity: binary_sensor.fotofeld_server_scott_s_phone_backup_overdue
+            name: Overdue
+          - type: markdown
+            content: "{{ state_attr('sensor.fotofeld_server_scott_s_phone_last_backup', 'files') }} files in its folder"
+            grid_options:
+              columns: full
+      - type: grid
+        cards:
+          - type: heading
+            heading: Soli's phone
+            icon: mdi:cellphone
+          - type: tile
+            entity: sensor.fotofeld_server_soli_s_phone_last_backup
+            name: Last backup
+          - type: tile
+            entity: binary_sensor.fotofeld_server_soli_s_phone_backup_overdue
+            name: Overdue
+          - type: markdown
+            content: "{{ state_attr('sensor.fotofeld_server_soli_s_phone_last_backup', 'files') }} files in its folder"
+            grid_options:
+              columns: full
+      - type: grid
+        cards:
+          - type: heading
+            heading: Ma's phone
+            icon: mdi:cellphone
+          - type: tile
+            entity: sensor.fotofeld_server_ma_s_phone_last_backup
+            name: Last backup
+          - type: tile
+            entity: binary_sensor.fotofeld_server_ma_s_phone_backup_overdue
+            name: Overdue
+          - type: markdown
+            content: "{{ state_attr('sensor.fotofeld_server_ma_s_phone_last_backup', 'files') }} files in its folder"
+            grid_options:
+              columns: full
+      - type: grid
+        column_span: 3
+        cards:
+          - type: heading
+            heading: Backups over time
+            icon: mdi:chart-timeline
+          - type: history-graph
+            hours_to_show: 336
+            grid_options:
+              columns: full
+            entities:
+              - entity: binary_sensor.fotofeld_server_scott_s_phone_backup_overdue
+                name: Scott's phone overdue
+              - entity: binary_sensor.fotofeld_server_soli_s_phone_backup_overdue
+                name: Soli's phone overdue
+              - entity: binary_sensor.fotofeld_server_ma_s_phone_backup_overdue
+                name: Ma's phone overdue
+
+  # ----------------------------------------------------------------------------------------------
+  - title: Imports
+    path: imports
+    icon: mdi:usb-flash-drive
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: USB drives and SD cards
+            icon: mdi:usb-flash-drive
+          - type: tile
+            entity: sensor.fotofeld_server_usb_import
+            name: Now
+            grid_options:
+              columns: full
+          - type: tile
+            entity: sensor.fotofeld_server_last_usb_import
+            name: Last import
+            grid_options:
+              columns: full
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set u = 'sensor.fotofeld_server_usb_import' %}
+              {% if state_attr(u, 'name') %}
+              **{{ state_attr(u, 'name') }}** ({{ state_attr(u, 'drive') }})
+              {% if states(u) == 'importing' %}is being imported, started {{ as_timestamp(state_attr(u, 'started')) | timestamp_custom('%H:%M') }}.
+              {% else %}
+              {%- set r = state_attr(u, 'result') %}
+              {%- if r == 'done' %}done: **{{ state_attr(u, 'copied') }}** new, {{ state_attr(u, 'alreadyThere') }} already in the library. Safe to remove.
+              {%- elif r == 'removed' %}was removed before it was finished. It is scanned again next time.
+              {%- else %}could not be read completely ({{ state_attr(u, 'errors') }} errors). It is tried again.{% endif %}
+              {% endif %}
+              {% else %}
+              Plug a USB drive or SD card into the Fotofeld computer: new pictures are copied in, the rest is left alone.
+              {% endif %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: Last sort
+            icon: mdi:sort-calendar-ascending
+          - type: tile
+            entity: sensor.fotofeld_server_last_sort
+            name: Finished
+            grid_options:
+              columns: full
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set s = 'sensor.fotofeld_server_last_sort' %}
+              {% set c = state_attr(s, 'counts') or {} %}
+              {% if c %}
+              {% if state_attr(s, 'dry_run') %}*Dry run, nothing was changed.*{% endif %}
+
+              | | |
+              |---|---:|
+              {% for k, v in c.items() | sort(attribute='1', reverse=true) %}| {{ k }} | {{ '{:,}'.format(v) | replace(',', ' ') }} |
+              {% endfor %}| Errors | {{ state_attr(s, 'errors') }} |
+
+              <sub>{{ state_attr(s, 'log') }}</sub>
+              {% else %}
+              No sort has finished yet with this version of Fotofeld.
+              {% endif %}
+          - type: tile
+            entity: sensor.fotofeld_server_not_sure
+            name: Not sure of the date
+            icon: mdi:calendar-question
+          - type: tile
+            entity: sensor.fotofeld_server_duplicates
+            name: Duplicates kept
+            icon: mdi:content-duplicate
+      - type: grid
+        cards:
+          - type: heading
+            heading: What happened
+            icon: mdi:history
+          - type: logbook
+            target:
+              entity_id:
+                - event.fotofeld_server_fotofeld
+                - switch.fotofeld_server_paused
+                - binary_sensor.fotofeld_server_disk_problem
+                - binary_sensor.fotofeld_server_analyzing
+            hours_to_show: 168
+            grid_options:
+              columns: full
+
+  # ----------------------------------------------------------------------------------------------
+  - title: Vision
+    path: vision
+    icon: mdi:image-search
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Fotofeld Vision
+            icon: mdi:image-search
+          - type: tile
+            entity: button.fotofeld_server_analyze_pictures
+            name: Analyze new pictures
+            icon: mdi:play-circle
+            grid_options:
+              columns: full
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_analyze_pictures
+              confirmation:
+                text: Run Fotofeld Vision on new pictures now?
+          - type: tile
+            entity: binary_sensor.fotofeld_server_analyzing
+            name: Analyzing
+          - type: tile
+            entity: sensor.fotofeld_server_last_analysis
+            name: Last analysis
+          - type: gauge
+            entity: sensor.fotofeld_server_analysis_progress
+            name: Progress
+            min: 0
+            max: 100
+            needle: false
+            grid_options:
+              columns: full
+            visibility:
+              - condition: state
+                entity: binary_sensor.fotofeld_server_analyzing
+                state: "on"
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set v = 'sensor.fotofeld_server_last_analysis' %}
+              {% if state_attr(v, 'pictures') %}
+              | | |
+              |---|---:|
+              | Pictures analyzed | {{ state_attr(v, 'pictures') }} |
+              | Not photos (screenshots, documents, graphics) | {{ state_attr(v, 'not_photos') }} |
+              | Look-alike groups | {{ state_attr(v, 'look_alike_groups') }} |
+              | Not analyzed yet | {{ state_attr(v, 'not_analyzed') }} |
+
+              Review them on the computer: *Open review page* in the Fotofeld window.
+              {% else %}
+              Fotofeld Vision hasn't run yet.
+              {% endif %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: People
+            icon: mdi:account-group
+          - type: tile
+            entity: sensor.fotofeld_server_named_people
+            name: Named people
+          - type: tile
+            entity: sensor.fotofeld_server_faces_to_name
+            name: Faces to name
+            icon: mdi:face-recognition
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set people = state_attr('sensor.fotofeld_server_named_people', 'photos') or {} %}
+              {% if people %}
+              | Person | Photos |
+              |---|---:|
+              {% for name, n in people.items() | sort(attribute='1', reverse=true) %}| {{ name }} | {{ n }} |
+              {% endfor %}
+              {% else %}
+              Nobody is named yet. In the Fotofeld window: *People...*, give the face groups names, then *Analyze pictures*.
+              {% endif %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: Subjects
+            icon: mdi:tag-multiple
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set t = state_attr('sensor.fotofeld_server_last_analysis', 'subjects') or {} %}
+              {% if t %}
+              | Subject | Photos |
+              |---|---:|
+              {% for name, n in t.items() | sort(attribute='1', reverse=true) %}| {{ name }} | {{ n }} |
+              {% endfor %}
+              <sub>Show one in the Photo frame: Photos → Shows → Subject: ...</sub>
+              {% else %}
+              No subjects yet.
+              {% endif %}
+
+  # ----------------------------------------------------------------------------------------------
+  - title: Disk
+    path: disk
+    icon: mdi:harddisk
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: The library's disk
+            icon: mdi:harddisk
+          - type: tile
+            entity: binary_sensor.fotofeld_server_disk_problem
+            name: Problem
+            grid_options:
+              columns: full
+          - type: tile
+            entity: sensor.fotofeld_server_disk_health
+            name: Windows says
+          - type: tile
+            entity: sensor.fotofeld_server_disk_read_errors
+            name: Read errors
+            icon: mdi:alert-octagon
+          - type: tile
+            entity: sensor.fotofeld_server_disk_temperature
+            name: Temperature
+          - type: tile
+            entity: sensor.fotofeld_server_disk_free
+            name: Free
+          - type: gauge
+            entity: sensor.fotofeld_server_disk_used
+            name: Used
+            min: 0
+            max: 100
+            needle: true
+            severity:
+              green: 0
+              yellow: 80
+              red: 92
+            grid_options:
+              columns: full
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {{ state_attr('sensor.fotofeld_server_disk_health', 'model') }},
+              drive {{ state_attr('sensor.fotofeld_server_disk_health', 'drive') }}.
+              {% if states('sensor.fotofeld_server_disk_read_errors') | int(0) > 0 %}
+              **This disk has had uncorrected read errors. Keep a copy of the Fotofeld folder elsewhere and replace it.**
+              {% endif %}
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Over time
+            icon: mdi:chart-line
+          - type: statistics-graph
+            title: Free space
+            entities:
+              - entity: sensor.fotofeld_server_disk_free
+                name: Free
+            stat_types: [min]
+            chart_type: line
+            period: day
+            days_to_show: 180
+            hide_legend: true
+            grid_options:
+              columns: full
+          - type: history-graph
+            title: Temperature and read errors
+            hours_to_show: 168
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.fotofeld_server_disk_temperature
+              - entity: sensor.fotofeld_server_disk_read_errors

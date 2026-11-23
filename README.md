@@ -42,6 +42,7 @@ Names start with `fotofeld_<computer name>_`.
 | `sensor.…_disk_free`, `…_disk_used`, `…_disk_health`, `…_disk_read_errors`, `…_disk_temperature`, `binary_sensor.…_disk_problem` | The disk the Fotofeld folder is on. |
 | `binary_sensor.…_analyzing`, `sensor.…_analysis_progress`, `…_last_analysis`, `…_faces_to_name`, `…_named_people` | Fotofeld Vision. |
 | `binary_sensor.…_busy`, `switch.…_paused` | The service. |
+| `select.…_photo_frame_shows` | What the Photo frame shows: Random, On this day, Latest, `Person: <name>` or `Subject: <name>`. |
 | `button.…_analyze_pictures`, `button.…_show_new_photos` | Start Vision; a new photo on every photo entity. |
 | `event.…_fotofeld` | The last thing that happened. |
 
@@ -69,7 +70,7 @@ Every event is fired as `fotofeld_event` with `type` and its details, and shown 
 | `phone_overdue` | `phone`, `lastBackup` |
 | `paused`, `resumed` | |
 
-See [`examples/automations.yaml`](examples/automations.yaml) for USB, disk, phone and nightly-analysis automations, and [`examples/dashboard.yaml`](examples/dashboard.yaml) for a ready-made *Photos* view.
+See [`examples/automations.yaml`](examples/automations.yaml) for USB, disk, phone and nightly-analysis automations, [`examples/fotofeld-dashboard.yaml`](examples/fotofeld-dashboard.yaml) for a full Fotofeld dashboard (Overview, Photos, Phones, Imports, Vision, Disk; built-in cards only), and [`examples/dashboard.yaml`](examples/dashboard.yaml) for a single Photos view.
 
 ## Privacy
 
