@@ -1,5 +1,7 @@
 # Fotofeld for Home Assistant
 
+> **Work in progress — not tested on a real Home Assistant yet.** Don't install it unless you are helping test it.
+
 Connects Home Assistant to [Fotofeld](https://github.com/Sanfeld/photo-organizer), the family photo library on a Windows computer. You get:
 
 - **Photos on your dashboards and panels:** *On this day* (the same day in earlier years), *Random*, *Latest*, one photo entity per person you've named in Fotofeld Vision, and a *Photo frame* that automations can point at anyone or anything.
