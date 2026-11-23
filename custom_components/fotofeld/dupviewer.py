@@ -31,6 +31,7 @@ class DuplicateViewer:
         self.duplicate_bytes: bytes | None = None
         self.available = True
         self.error: str | None = None
+        self.last_delete: str | None = None
 
     @property
     def original(self) -> dict | None:
@@ -98,6 +99,24 @@ class DuplicateViewer:
             self.duplicate_bytes = await self._picture(self.duplicate)
             self._signal()
 
+    async def _delete(self, paths: list[str]) -> None:
+        if not paths:
+            return
+        r = await self.api.delete_dups(paths)
+        kept = [x for x in r.get("results") or [] if x.get("result") not in ("recycled", "deleted", "gone")]
+        reasons = sorted({x.get("reason") or "" for x in kept})
+        self.last_delete = f"{r.get('deleted', 0)} deleted" + (f", {len(kept)} kept: " + " ".join(reasons) if kept else "")
+        await self.load()
+
+    async def delete_current(self) -> None:
+        """Deletes the duplicate being shown (never the original)."""
+        d = self.duplicate
+        await self._delete([d["path"]] if d else [])
+
+    async def delete_group(self) -> None:
+        """Deletes every duplicate of the original being shown."""
+        await self._delete([d["path"] for d in (self.group or {}).get("dups") or []])
+
     async def set_query(self, query: str) -> None:
         self.query, self.index, self.dup = query.strip(), 0, 0
         await self.load()
@@ -127,4 +146,6 @@ class DuplicateViewer:
             })
         if self.error:
             base["error"] = self.error
+        if self.last_delete:
+            base["last_delete"] = self.last_delete
         return base

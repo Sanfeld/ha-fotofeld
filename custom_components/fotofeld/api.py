@@ -82,6 +82,21 @@ class FotofeldApi:
     async def dup_image(self, path: str, size: int) -> bytes:
         return await self._request("GET", "/api/dups/image", params={"path": path, "size": size}, raw=True, timeout=60)
 
+    async def delete_dups(self, paths: list[str], permanent: bool = False) -> dict:
+        """Deletes duplicates (checked against their originals; to the Recycle Bin). Fotofeld 1.3 and newer."""
+        try:
+            async with self._session.post(
+                self.base + "/api/dups/delete", json={"paths": paths, "permanent": permanent}, headers=self._headers,
+                timeout=aiohttp.ClientTimeout(total=300),
+            ) as resp:
+                if resp.status == 401:
+                    raise FotofeldAuthError("Wrong pairing code")
+                if resp.status >= 400:
+                    raise FotofeldError(f"{resp.status}: {await _error_text(resp)}")
+                return await resp.json(content_type=None)
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            raise FotofeldError(f"Cannot reach Fotofeld at {self.base}: {err}") from err
+
     async def action(self, name: str) -> dict:
         return await self._request("POST", f"/api/actions/{name}")
 

@@ -510,6 +510,38 @@ views:
               perform_action: button.press
               target:
                 entity_id: button.fotofeld_server_next_duplicate
+          - type: tile
+            entity: button.fotofeld_server_delete_this_duplicate
+            name: Delete this duplicate
+            icon: mdi:delete-outline
+            color: red
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_delete_this_duplicate
+              confirmation:
+                text: >-
+                  Delete this duplicate? It goes to the Recycle Bin on the Fotofeld computer.
+                  The original stays. Fotofeld checks they are identical first.
+          - type: tile
+            entity: button.fotofeld_server_delete_all_duplicates_of_this_original
+            name: Delete all of this original's duplicates
+            icon: mdi:delete-sweep-outline
+            color: red
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_delete_all_duplicates_of_this_original
+              confirmation:
+                text: >-
+                  Delete every duplicate of this original? They go to the Recycle Bin on the
+                  Fotofeld computer. The original stays.
+          - type: markdown
+            content: >-
+              {% set m = state_attr('image.fotofeld_server_duplicate_check_duplicate', 'last_delete') %}
+              {% if m %}Last delete: {{ m }}{% else %}Network-share duplicates (no Recycle Bin) can only be deleted from the web page.{% endif %}
 
   # ----------------------------------------------------------------------------------------------
   - title: Phones

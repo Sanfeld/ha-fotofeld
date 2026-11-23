@@ -157,6 +157,12 @@
       },
       "dup_previous_duplicate": {
         "name": "Previous duplicate"
+      },
+      "dup_delete": {
+        "name": "Delete this duplicate"
+      },
+      "dup_delete_all": {
+        "name": "Delete all duplicates of this original"
       }
     },
     "image": {

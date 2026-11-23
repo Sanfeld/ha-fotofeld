@@ -51,6 +51,8 @@ DUP_BUTTONS = {
     "dup_random_original": lambda v: v.random_original(),
     "dup_next_duplicate": lambda v: v.next_duplicate(1),
     "dup_previous_duplicate": lambda v: v.next_duplicate(-1),
+    "dup_delete": lambda v: v.delete_current(),
+    "dup_delete_all": lambda v: v.delete_group(),
 }
 
 
@@ -63,4 +65,7 @@ class DupButton(FotofeldEntity, ButtonEntity):
         self._attr_translation_key = key
 
     async def async_press(self) -> None:
-        await DUP_BUTTONS[self._key](self._entry.runtime_data.dups)
+        try:
+            await DUP_BUTTONS[self._key](self._entry.runtime_data.dups)
+        except FotofeldError as err:
+            raise HomeAssistantError(str(err)) from err

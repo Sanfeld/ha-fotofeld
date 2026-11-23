@@ -64,6 +64,8 @@ def fotofeld(aioclient_mock):
     aioclient_mock.get(f"{BASE}/api/photo/file", content=JPEG, headers={"Content-Type": "image/jpeg"})
     aioclient_mock.get(f"{BASE}/api/dups", json=DUPS)
     aioclient_mock.get(f"{BASE}/api/dups/image", content=JPEG)
+    aioclient_mock.post(f"{BASE}/api/dups/delete", json={"deleted": 1, "results": [
+        {"path": "x", "result": "recycled", "reason": ""}, {"path": "y", "result": "skipped", "reason": "The original is gone."}]})
     aioclient_mock.post(f"{BASE}/api/actions/vision", json={"result": "started"})
     aioclient_mock.post(f"{BASE}/api/actions/pause", json={"paused": True})
     aioclient_mock.post(f"{BASE}/api/actions/resume", json={"paused": False})

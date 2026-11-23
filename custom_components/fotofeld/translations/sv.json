@@ -157,6 +157,12 @@
       },
       "dup_previous_duplicate": {
         "name": "Föregående dubblett"
+      },
+      "dup_delete": {
+        "name": "Radera den här dubbletten"
+      },
+      "dup_delete_all": {
+        "name": "Radera alla dubbletter av originalet"
       }
     },
     "image": {

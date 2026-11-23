@@ -171,3 +171,16 @@ async def test_duplicates_viewer_old_server(hass: HomeAssistant, aioclient_mock,
     await hass.async_block_till_done()
     assert hass.states.get("image.fotofeld_server_duplicate_check_original").state == "unavailable"
     assert hass.states.get("sensor.fotofeld_server_files_in_library").state == "86331"
+
+
+async def test_delete_duplicate(hass: HomeAssistant, setup, fotofeld):
+    await hass.async_block_till_done()
+    await hass.services.async_call("button", "press", {"entity_id": "button.fotofeld_server_delete_this_duplicate"}, blocking=True)
+    sent = [c for c in fotofeld.mock_calls if str(c[1]).endswith("/api/dups/delete")]
+    assert len(sent) == 1
+    assert sent[0][2] == {"paths": ["E:\\Fotofeld\\Sorted\\_Duplicates\\2014\\04\\a.jpg"], "permanent": False}
+    d = hass.states.get("image.fotofeld_server_duplicate_check_duplicate")
+    assert d.attributes["last_delete"] == "1 deleted, 1 kept: The original is gone."
+    await hass.services.async_call("button", "press", {"entity_id": "button.fotofeld_server_delete_all_duplicates_of_this_original"}, blocking=True)
+    sent = [c for c in fotofeld.mock_calls if str(c[1]).endswith("/api/dups/delete")]
+    assert len(sent[-1][2]["paths"]) == 2
