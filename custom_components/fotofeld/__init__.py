@@ -12,8 +12,9 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
 from .api import FotofeldApi, FotofeldAuthError, FotofeldError
-from .const import CONF_CODE, DOMAIN, PHOTO_MODES
+from .const import CONF_CODE, CONF_PHOTO_SIZE, DEFAULT_PHOTO_SIZE, DOMAIN, PHOTO_MODES
 from .coordinator import FotofeldConfigEntry, FotofeldCoordinator, FotofeldData
+from .dupviewer import DuplicateViewer
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
@@ -23,6 +24,7 @@ PLATFORMS = [
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    Platform.TEXT,
 ]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -99,6 +101,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: FotofeldConfigEntry) -> 
     except FotofeldError:
         pass
     await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data.dups = DuplicateViewer(
+        hass, api, entry.entry_id, int(entry.options.get(CONF_PHOTO_SIZE, DEFAULT_PHOTO_SIZE)))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_reload))

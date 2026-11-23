@@ -37,6 +37,7 @@ class FotofeldData:
     people: list[str] = field(default_factory=list)
     subjects: list[str] = field(default_factory=list)
     frame: dict = field(default_factory=lambda: {"mode": "random", "name": None})
+    dups: object = None      # DuplicateViewer
 
 
 def parse_time(value: Any) -> datetime | None:

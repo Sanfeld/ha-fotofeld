@@ -400,6 +400,118 @@ views:
               *Edit → Add card → Picture entity* after naming people in Fotofeld Vision.
 
   # ----------------------------------------------------------------------------------------------
+  - title: Duplicates
+    path: duplicates
+    icon: mdi:content-duplicate
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Spot-check duplicates
+            icon: mdi:content-duplicate
+          - type: tile
+            entity: text.fotofeld_server_duplicate_check_filter
+            name: Only paths containing (2014\04, a drive name…)
+            grid_options:
+              columns: full
+          - type: markdown
+            grid_options:
+              columns: full
+            content: >-
+              {% set o = 'image.fotofeld_server_duplicate_check_original' %}
+              {% set d = 'image.fotofeld_server_duplicate_check_duplicate' %}
+              {% if state_attr(o, 'error') %}{{ state_attr(o, 'error') }}
+              {% elif state_attr(o, 'original_number') %}
+              **Original {{ state_attr(o, 'original_number') }} of {{ state_attr(o, 'originals_matching') }}**
+              · duplicate {{ state_attr(d, 'duplicate_number') }} of {{ state_attr(d, 'duplicates_of_this_original') }}
+              · {{ state_attr(d, 'kind') }}
+              · {% if state_attr(d, 'same_size') %}✅ same size{% else %}⚠️ check the size{% endif %}
+              {% else %}No duplicates in the logs{% if state_attr(o, 'filter') %} match the filter{% endif %}.{% endif %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: Original
+            icon: mdi:image
+          - type: picture-entity
+            entity: image.fotofeld_server_duplicate_check_original
+            show_name: false
+            show_state: false
+            tap_action:
+              action: more-info
+          - type: markdown
+            content: >-
+              `{{ state_attr('image.fotofeld_server_duplicate_check_original', 'original_path') }}`
+              · {{ ((state_attr('image.fotofeld_server_duplicate_check_original', 'original_size') or 0) / 1000) | round(0) }} kB
+          - type: tile
+            entity: button.fotofeld_server_previous_original
+            name: Previous original
+            icon: mdi:chevron-up
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_previous_original
+          - type: tile
+            entity: button.fotofeld_server_next_original
+            name: Next original
+            icon: mdi:chevron-down
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_next_original
+          - type: tile
+            entity: button.fotofeld_server_random_original
+            name: Random
+            icon: mdi:dice-5
+            grid_options:
+              columns: full
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_random_original
+      - type: grid
+        cards:
+          - type: heading
+            heading: Duplicate
+            icon: mdi:content-copy
+          - type: picture-entity
+            entity: image.fotofeld_server_duplicate_check_duplicate
+            show_name: false
+            show_state: false
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_next_duplicate
+          - type: markdown
+            content: >-
+              `{{ state_attr('image.fotofeld_server_duplicate_check_duplicate', 'duplicate_path') }}`
+              · {{ ((state_attr('image.fotofeld_server_duplicate_check_duplicate', 'duplicate_size') or 0) / 1000) | round(0) }} kB
+          - type: tile
+            entity: button.fotofeld_server_previous_duplicate
+            name: Previous duplicate
+            icon: mdi:chevron-left
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_previous_duplicate
+          - type: tile
+            entity: button.fotofeld_server_next_duplicate
+            name: Next duplicate
+            icon: mdi:chevron-right
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.fotofeld_server_next_duplicate
+
+  # ----------------------------------------------------------------------------------------------
   - title: Phones
     path: phones
     icon: mdi:cellphone-arrow-down

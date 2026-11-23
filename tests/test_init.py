@@ -132,3 +132,42 @@ async def test_frame_select(hass: HomeAssistant, setup, fotofeld):
     await hass.services.async_call(DOMAIN, "next_photo", {"mode": "onthisday"},
                                    target={"entity_id": "image.fotofeld_server_photo_frame"}, blocking=True)
     assert hass.states.get(sel).state == "onthisday"
+
+
+async def test_duplicates_viewer(hass: HomeAssistant, setup, fotofeld):
+    await hass.async_block_till_done()
+    o = hass.states.get("image.fotofeld_server_duplicate_check_original")
+    d = hass.states.get("image.fotofeld_server_duplicate_check_duplicate")
+    assert o.attributes["original_path"] == "Sorted\\2014\\04\\a.jpg"
+    assert d.attributes["duplicate_number"] == 1
+    assert d.attributes["duplicates_of_this_original"] == 2
+    assert d.attributes["same_size"] is True
+    assert d.attributes["kind"] == "copy in _Duplicates"
+    await hass.services.async_call("button", "press", {"entity_id": "button.fotofeld_server_next_duplicate"}, blocking=True)
+    d = hass.states.get("image.fotofeld_server_duplicate_check_duplicate")
+    assert d.attributes["duplicate_number"] == 2
+    assert d.attributes["kind"] == "left in place (only listed)"
+    await hass.services.async_call("button", "press", {"entity_id": "button.fotofeld_server_next_original"}, blocking=True)
+    assert hass.states.get("image.fotofeld_server_duplicate_check_duplicate").attributes["duplicate_number"] == 1
+    assert hass.states.get("image.fotofeld_server_duplicate_check_original").attributes["original_number"] == 2
+    await hass.services.async_call("text", "set_value", {"entity_id": "text.fotofeld_server_duplicate_check_filter", "value": "2014"}, blocking=True)
+    assert hass.states.get("text.fotofeld_server_duplicate_check_filter").state == "2014"
+    assert hass.states.get("image.fotofeld_server_duplicate_check_original").attributes["filter"] == "2014"
+    assert any("q=2014" in str(c[1]) for c in fotofeld.mock_calls)
+
+
+async def test_duplicates_viewer_old_server(hass: HomeAssistant, aioclient_mock, fotofeld, entry, freezer):
+    # Fotofeld 1.1 has no /api/dups: the viewer entities are unavailable, the rest works.
+    fotofeld.clear_requests()
+    from .conftest import INFO, STATS, PEOPLE, PHOTO, JPEG, BASE as B
+    aioclient_mock.get(f"{B}/api/info", json=INFO)
+    aioclient_mock.get(f"{B}/api/stats", json=STATS)
+    aioclient_mock.get(f"{B}/api/people", json=PEOPLE)
+    aioclient_mock.get(f"{B}/api/photo", json=PHOTO)
+    aioclient_mock.get(f"{B}/api/photo/file", content=JPEG)
+    aioclient_mock.get(f"{B}/api/dups", status=404, json={"error": "Unknown request."})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("image.fotofeld_server_duplicate_check_original").state == "unavailable"
+    assert hass.states.get("sensor.fotofeld_server_files_in_library").state == "86331"

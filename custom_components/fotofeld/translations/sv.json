@@ -142,6 +142,21 @@
       },
       "next_photos": {
         "name": "Visa nya foton"
+      },
+      "dup_next_original": {
+        "name": "Nästa original"
+      },
+      "dup_previous_original": {
+        "name": "Föregående original"
+      },
+      "dup_random_original": {
+        "name": "Slumpvis original"
+      },
+      "dup_next_duplicate": {
+        "name": "Nästa dubblett"
+      },
+      "dup_previous_duplicate": {
+        "name": "Föregående dubblett"
       }
     },
     "image": {
@@ -159,6 +174,12 @@
       },
       "person_photo": {
         "name": "Bild på {person}"
+      },
+      "dup_original": {
+        "name": "Dubblettkontroll: original"
+      },
+      "dup_duplicate": {
+        "name": "Dubblettkontroll: dubblett"
       }
     },
     "event": {
@@ -189,6 +210,11 @@
           "onthisday": "Den här dagen",
           "latest": "Senaste"
         }
+      }
+    },
+    "text": {
+      "dup_filter": {
+        "name": "Filter för dubblettkontroll"
       }
     }
   },

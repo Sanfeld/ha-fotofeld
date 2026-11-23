@@ -22,6 +22,7 @@ SIGNAL_FRAME_SET = "fotofeld_frame_set_{}"          # select -> photo frame: (mo
 SIGNAL_FRAME_CHANGED = "fotofeld_frame_changed_{}"  # photo frame -> select
 from .const import CONF_PHOTO_MINUTES, CONF_PHOTO_SIZE, DEFAULT_PHOTO_MINUTES, DEFAULT_PHOTO_SIZE, PHOTO_MODES
 from .coordinator import FotofeldConfigEntry
+from .dupviewer import SIGNAL_DUPS
 from .entity import FotofeldEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +37,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: FotofeldConfigEntry, asy
     ]
     for person in entry.runtime_data.people:
         entities.append(FotofeldPhoto(hass, entry, f"person_{slugify(person)}", "person", person, translation="person_photo"))
+    entities += [DupImage(hass, entry, "original"), DupImage(hass, entry, "duplicate")]
     async_add_entities(entities)
+    hass.async_create_task(entry.runtime_data.dups.load())
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
@@ -139,3 +142,41 @@ class FotofeldPhoto(FotofeldEntity, ImageEntity):
             "path": p.get("path"),
             "matches": p.get("matches"),
         }
+
+
+class DupImage(FotofeldEntity, ImageEntity):
+    """Duplicates viewer: the original, or the duplicate being checked."""
+
+    _attr_content_type = "image/jpeg"
+
+    def __init__(self, hass: HomeAssistant, entry: FotofeldConfigEntry, which: str) -> None:
+        FotofeldEntity.__init__(self, entry, f"dup_{which}")
+        ImageEntity.__init__(self, hass)
+        self._entry, self._which = entry, which
+        self._attr_translation_key = f"dup_{which}"
+
+    @property
+    def _viewer(self):
+        return self._entry.runtime_data.dups
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self.async_on_remove(async_dispatcher_connect(
+            self.hass, SIGNAL_DUPS.format(self._entry.entry_id), self._changed))
+
+    @callback
+    def _changed(self) -> None:
+        self._attr_image_last_updated = dt_util.utcnow()
+        self.async_write_ha_state()
+
+    async def async_image(self) -> bytes | None:
+        v = self._viewer
+        return v.original_bytes if self._which == "original" else v.duplicate_bytes
+
+    @property
+    def available(self) -> bool:
+        return self._viewer.available
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return self._viewer.attributes(self._which)

@@ -16,7 +16,7 @@ SIGNAL_NEXT_PHOTOS = "fotofeld_next_photos_{}"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: FotofeldConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback) -> None:
-    async_add_entities([AnalyzeButton(entry), NextPhotosButton(entry)])
+    async_add_entities([AnalyzeButton(entry), NextPhotosButton(entry)] + [DupButton(entry, key) for key in DUP_BUTTONS])
 
 
 class AnalyzeButton(FotofeldEntity, ButtonEntity):
@@ -43,3 +43,24 @@ class NextPhotosButton(FotofeldEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         async_dispatcher_send(self.hass, SIGNAL_NEXT_PHOTOS.format(self._entry_id))
+
+
+DUP_BUTTONS = {
+    "dup_next_original": lambda v: v.next_original(1),
+    "dup_previous_original": lambda v: v.next_original(-1),
+    "dup_random_original": lambda v: v.random_original(),
+    "dup_next_duplicate": lambda v: v.next_duplicate(1),
+    "dup_previous_duplicate": lambda v: v.next_duplicate(-1),
+}
+
+
+class DupButton(FotofeldEntity, ButtonEntity):
+    """Steps through the duplicates viewer."""
+
+    def __init__(self, entry: FotofeldConfigEntry, key: str) -> None:
+        super().__init__(entry, key)
+        self._entry, self._key = entry, key
+        self._attr_translation_key = key
+
+    async def async_press(self) -> None:
+        await DUP_BUTTONS[self._key](self._entry.runtime_data.dups)

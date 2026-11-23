@@ -28,6 +28,16 @@ STATS = {
 }
 PEOPLE = {"people": [{"name": "Soli", "photos": 400}], "subjects": [{"name": "Midsummer", "photos": 80}]}
 PHOTO = {"id": "abc", "path": "Sorted\\2021\\11\\x.jpg", "date": "2021-11-23", "yearsAgo": 5, "people": ["Soli"], "subjects": [], "matches": 3}
+DUPS = {
+    "by": "original", "total": 2, "offset": 0, "originals": 2, "duplicates": 3, "built": "2026-11-23T16:00:00",
+    "groups": [{
+        "original": {"path": "E:\\Fotofeld\\Sorted\\2014\\04\\a.jpg", "rel": "Sorted\\2014\\04\\a.jpg", "exists": True, "size": 1000, "picture": True, "inLibrary": True},
+        "dups": [
+            {"path": "E:\\Fotofeld\\Sorted\\_Duplicates\\2014\\04\\a.jpg", "rel": "Sorted\\_Duplicates\\2014\\04\\a.jpg", "exists": True, "size": 1000, "picture": True, "kind": "copy", "time": "2026-11-21 23:00:00"},
+            {"path": "D:\\Old\\a (1).jpg", "exists": True, "size": 1000, "picture": True, "kind": "listed", "time": "2026-11-21 23:00:01"},
+        ],
+    }],
+}
 JPEG = b"\xff\xd8\xff\xe0" + b"0" * 100 + b"\xff\xd9"
 
 
@@ -52,6 +62,8 @@ def fotofeld(aioclient_mock):
     aioclient_mock.get(f"{BASE}/api/events", json={"lastEventId": 5, "events": []})
     aioclient_mock.get(f"{BASE}/api/photo", json=PHOTO)
     aioclient_mock.get(f"{BASE}/api/photo/file", content=JPEG, headers={"Content-Type": "image/jpeg"})
+    aioclient_mock.get(f"{BASE}/api/dups", json=DUPS)
+    aioclient_mock.get(f"{BASE}/api/dups/image", content=JPEG)
     aioclient_mock.post(f"{BASE}/api/actions/vision", json={"result": "started"})
     aioclient_mock.post(f"{BASE}/api/actions/pause", json={"paused": True})
     aioclient_mock.post(f"{BASE}/api/actions/resume", json={"paused": False})
