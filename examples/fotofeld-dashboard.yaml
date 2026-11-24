@@ -121,6 +121,7 @@ views:
             name: Busy
           - type: tile
             entity: button.fotofeld_server_analyze_pictures
+            hide_state: true
             name: Analyze pictures
             icon: mdi:image-search
             tap_action:
@@ -132,6 +133,7 @@ views:
                 text: Run Fotofeld Vision on new pictures now? It uses the graphics card for a while.
           - type: tile
             entity: button.fotofeld_server_show_new_photos
+            hide_state: true
             name: New photos everywhere
             icon: mdi:image-refresh
             tap_action:
@@ -450,6 +452,7 @@ views:
               ⚠️ **{{ e }}**{% endif %}
           - type: tile
             entity: button.fotofeld_server_previous_original
+            hide_state: true
             name: Previous original
             icon: mdi:chevron-up
             tap_action:
@@ -459,6 +462,7 @@ views:
                 entity_id: button.fotofeld_server_previous_original
           - type: tile
             entity: button.fotofeld_server_next_original
+            hide_state: true
             name: Next original
             icon: mdi:chevron-down
             tap_action:
@@ -468,6 +472,7 @@ views:
                 entity_id: button.fotofeld_server_next_original
           - type: tile
             entity: button.fotofeld_server_random_original
+            hide_state: true
             name: Random
             icon: mdi:dice-5
             grid_options:
@@ -500,6 +505,7 @@ views:
               ⚠️ **{{ e }}**{% endif %}
           - type: tile
             entity: button.fotofeld_server_previous_duplicate
+            hide_state: true
             name: Previous duplicate
             icon: mdi:chevron-left
             tap_action:
@@ -509,6 +515,7 @@ views:
                 entity_id: button.fotofeld_server_previous_duplicate
           - type: tile
             entity: button.fotofeld_server_next_duplicate
+            hide_state: true
             name: Next duplicate
             icon: mdi:chevron-right
             tap_action:
@@ -518,6 +525,7 @@ views:
                 entity_id: button.fotofeld_server_next_duplicate
           - type: tile
             entity: button.fotofeld_server_delete_this_duplicate
+            hide_state: true
             name: Delete this duplicate
             icon: mdi:delete-outline
             color: red
@@ -532,6 +540,7 @@ views:
                   The original stays. Fotofeld checks they are identical first.
           - type: tile
             entity: button.fotofeld_server_delete_all_duplicates_of_this_original
+            hide_state: true
             name: Delete all of this original's duplicates
             icon: mdi:delete-sweep-outline
             color: red
@@ -724,6 +733,7 @@ views:
             icon: mdi:image-search
           - type: tile
             entity: button.fotofeld_server_analyze_pictures
+            hide_state: true
             name: Analyze new pictures
             icon: mdi:play-circle
             grid_options:
