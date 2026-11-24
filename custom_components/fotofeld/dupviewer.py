@@ -34,6 +34,7 @@ class DuplicateViewer:
         self.error: str | None = None
         self.last_delete: str | None = None
         self._retry = None
+        self.picture_error: dict[str, str | None] = {"original": None, "duplicate": None}
 
     @property
     def original(self) -> dict | None:
@@ -48,12 +49,22 @@ class DuplicateViewer:
     def _signal(self) -> None:
         async_dispatcher_send(self.hass, SIGNAL_DUPS.format(self.entry_id))
 
-    async def _picture(self, f: dict | None) -> bytes | None:
-        if not f or not f.get("exists") or not f.get("picture"):
+    async def _picture(self, f: dict | None, which: str) -> bytes | None:
+        self.picture_error[which] = None
+        if not f:
+            return None
+        if not f.get("exists"):
+            self.picture_error[which] = "This file is gone (deleted or moved)."
+            return None
+        if not f.get("picture"):
+            self.picture_error[which] = "Not a picture Home Assistant can show (a video or HEIC). Open it in the Fotofeld web page."
             return None
         try:
             return await self.api.dup_image(f["path"], self.size)
         except FotofeldError as err:
+            # Say why: "Windows could not read this file" usually means the disk is failing there.
+            msg = str(err)
+            self.picture_error[which] = msg.split(": ", 1)[1] if msg[:4] in ("500:", "404:", "415:") else msg
             _LOGGER.debug("No picture for %s: %s", f.get("path"), err)
             return None
 
@@ -79,8 +90,8 @@ class DuplicateViewer:
         self.group = groups[0] if groups else None
         if self.group:
             self.dup = min(self.dup, max(0, len(self.group.get("dups") or []) - 1))
-        self.original_bytes = await self._picture(self.original)
-        self.duplicate_bytes = await self._picture(self.duplicate)
+        self.original_bytes = await self._picture(self.original, "original")
+        self.duplicate_bytes = await self._picture(self.duplicate, "duplicate")
         self._signal()
 
     def _schedule_retry(self) -> None:
@@ -114,7 +125,7 @@ class DuplicateViewer:
         n = len(self.group.get("dups") or [])
         if n:
             self.dup = (self.dup + step) % n
-            self.duplicate_bytes = await self._picture(self.duplicate)
+            self.duplicate_bytes = await self._picture(self.duplicate, "duplicate")
             self._signal()
 
     async def _delete(self, paths: list[str]) -> None:
@@ -162,6 +173,8 @@ class DuplicateViewer:
                 "exists": d and d.get("exists"),
                 "logged": d and d.get("time"),
             })
+        if self.picture_error.get(which):
+            base["picture_error"] = self.picture_error[which]
         if self.error:
             base["error"] = self.error
         if self.last_delete:

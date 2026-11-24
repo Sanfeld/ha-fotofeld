@@ -210,3 +210,17 @@ async def test_duplicates_viewer_waits_while_fotofeld_reads(hass: HomeAssistant,
     o = hass.states.get("image.fotofeld_server_duplicate_check_original")
     assert "error" not in o.attributes
     assert o.attributes["original_number"] == 1
+
+
+async def test_duplicates_viewer_says_why_a_picture_is_missing(hass: HomeAssistant, aioclient_mock, entry, freezer):
+    from .conftest import INFO, STATS, PEOPLE, PHOTO, JPEG, DUPS, BASE as B
+    for path, kw in [("/api/info", {"json": INFO}), ("/api/stats", {"json": STATS}), ("/api/people", {"json": PEOPLE}),
+                     ("/api/photo", {"json": PHOTO}), ("/api/photo/file", {"content": JPEG}), ("/api/dups", {"json": DUPS})]:
+        aioclient_mock.get(f"{B}{path}", **kw)
+    aioclient_mock.get(f"{B}/api/dups/image", status=500,
+                       json={"error": "Windows could not read this file: Data error (cyclic redundancy check).", "unreadable": True})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    o = hass.states.get("image.fotofeld_server_duplicate_check_original")
+    assert o.attributes["picture_error"] == "Windows could not read this file: Data error (cyclic redundancy check)."

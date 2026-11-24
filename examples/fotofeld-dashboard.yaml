@@ -445,6 +445,9 @@ views:
             content: >-
               `{{ state_attr('image.fotofeld_server_duplicate_check_original', 'original_path') }}`
               · {{ ((state_attr('image.fotofeld_server_duplicate_check_original', 'original_size') or 0) / 1000) | round(0) }} kB
+              {% set e = state_attr('image.fotofeld_server_duplicate_check_original', 'picture_error') %}{% if e %}
+
+              ⚠️ **{{ e }}**{% endif %}
           - type: tile
             entity: button.fotofeld_server_previous_original
             name: Previous original
@@ -492,6 +495,9 @@ views:
             content: >-
               `{{ state_attr('image.fotofeld_server_duplicate_check_duplicate', 'duplicate_path') }}`
               · {{ ((state_attr('image.fotofeld_server_duplicate_check_duplicate', 'duplicate_size') or 0) / 1000) | round(0) }} kB
+              {% set e = state_attr('image.fotofeld_server_duplicate_check_duplicate', 'picture_error') %}{% if e %}
+
+              ⚠️ **{{ e }}**{% endif %}
           - type: tile
             entity: button.fotofeld_server_previous_duplicate
             name: Previous duplicate
