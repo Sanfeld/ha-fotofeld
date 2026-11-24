@@ -125,6 +125,11 @@ SENSORS: tuple[FotofeldSensorDescription, ...] = (
     FotofeldSensorDescription(
         key="vision_progress", translation_key="vision_progress", native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda s: s.get("visionProgress") if s.get("visionRunning") else None,
+        attrs_fn=lambda s: {
+            "step": s.get("visionStep") if s.get("visionRunning") else None,
+            "seconds_left": s.get("visionSecondsLeft") if s.get("visionRunning") else None,
+            "started": s.get("visionStarted") if s.get("visionRunning") else None,
+        },
     ),
     FotofeldSensorDescription(
         key="last_analysis", translation_key="last_analysis", device_class=SensorDeviceClass.TIMESTAMP,
