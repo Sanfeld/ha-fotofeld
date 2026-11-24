@@ -39,6 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: FotofeldConfigEntry, asy
         entities.append(FotofeldPhoto(hass, entry, f"person_{slugify(person)}", "person", person, translation="person_photo"))
     entities += [DupImage(hass, entry, "original"), DupImage(hass, entry, "duplicate")]
     async_add_entities(entities)
+    entry.async_on_unload(entry.runtime_data.dups.shutdown)
     hass.async_create_task(entry.runtime_data.dups.load())
 
     platform = entity_platform.async_get_current_platform()
