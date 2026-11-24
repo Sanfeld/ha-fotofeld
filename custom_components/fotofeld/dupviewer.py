@@ -7,6 +7,7 @@ import random
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.event import async_call_later
 
 from .api import FotofeldApi, FotofeldError, FotofeldNotFound
 
@@ -32,6 +33,7 @@ class DuplicateViewer:
         self.available = True
         self.error: str | None = None
         self.last_delete: str | None = None
+        self._retry = None
 
     @property
     def original(self) -> dict | None:
@@ -64,7 +66,10 @@ class DuplicateViewer:
             self._signal()
             return
         except FotofeldError as err:
-            self.error = str(err)
+            # Fotofeld reads its sort logs the first time (a minute or two for a big library), or was busy: try again soon.
+            msg = str(err)
+            self.error = msg.split(": ", 1)[1] if msg.startswith("503: ") else msg
+            self._schedule_retry()
             self._signal()
             return
         self.available, self.error = True, None
@@ -77,6 +82,19 @@ class DuplicateViewer:
         self.original_bytes = await self._picture(self.original)
         self.duplicate_bytes = await self._picture(self.duplicate)
         self._signal()
+
+    def _schedule_retry(self) -> None:
+        if self._retry is None:
+            self._retry = async_call_later(self.hass, 15, self._retry_now)
+
+    async def _retry_now(self, _now) -> None:
+        self._retry = None
+        await self.load()
+
+    def shutdown(self) -> None:
+        if self._retry is not None:
+            self._retry()
+            self._retry = None
 
     async def next_original(self, step: int = 1) -> None:
         if self.total:

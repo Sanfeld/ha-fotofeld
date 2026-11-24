@@ -184,3 +184,29 @@ async def test_delete_duplicate(hass: HomeAssistant, setup, fotofeld):
     await hass.services.async_call("button", "press", {"entity_id": "button.fotofeld_server_delete_all_duplicates_of_this_original"}, blocking=True)
     sent = [c for c in fotofeld.mock_calls if str(c[1]).endswith("/api/dups/delete")]
     assert len(sent[-1][2]["paths"]) == 2
+
+
+async def test_duplicates_viewer_waits_while_fotofeld_reads(hass: HomeAssistant, aioclient_mock, entry, freezer):
+    from .conftest import INFO, STATS, PEOPLE, PHOTO, JPEG, DUPS, BASE as B
+    for path, kw in [("/api/info", {"json": INFO}), ("/api/stats", {"json": STATS}), ("/api/people", {"json": PEOPLE}),
+                     ("/api/photo", {"json": PHOTO}), ("/api/photo/file", {"content": JPEG}), ("/api/dups/image", {"content": JPEG})]:
+        aioclient_mock.get(f"{B}{path}", **kw)
+    aioclient_mock.get(f"{B}/api/dups", status=503, json={"building": True, "error": "Fotofeld is reading the sort logs (20 s so far)."})
+    await hass.config.async_set_time_zone("Europe/Stockholm")
+    freezer.move_to("2026-11-24 05:00:00+01:00")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    o = hass.states.get("image.fotofeld_server_duplicate_check_original")
+    assert o.attributes["error"] == "Fotofeld is reading the sort logs (20 s so far)."
+    # Fotofeld has finished reading: the next try (15 s later) shows the duplicates.
+    aioclient_mock.clear_requests()
+    for path, kw in [("/api/info", {"json": INFO}), ("/api/stats", {"json": STATS}), ("/api/events", {"json": {"lastEventId": 5, "events": []}}),
+                     ("/api/dups", {"json": DUPS}), ("/api/dups/image", {"content": JPEG})]:
+        aioclient_mock.get(f"{B}{path}", **kw)
+    freezer.tick(timedelta(seconds=16))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+    o = hass.states.get("image.fotofeld_server_duplicate_check_original")
+    assert "error" not in o.attributes
+    assert o.attributes["original_number"] == 1

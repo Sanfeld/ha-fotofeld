@@ -77,7 +77,7 @@ class FotofeldApi:
 
     async def dups(self, offset: int = 0, limit: int = 1, q: str = "") -> dict:
         """Duplicates and the originals they match (Fotofeld 1.2 and newer)."""
-        return await self._request("GET", "/api/dups", params={"offset": offset, "limit": limit, "q": q})
+        return await self._request("GET", "/api/dups", params={"offset": offset, "limit": limit, "q": q}, timeout=120)
 
     async def dup_image(self, path: str, size: int) -> bytes:
         return await self._request("GET", "/api/dups/image", params={"path": path, "size": size}, raw=True, timeout=60)
