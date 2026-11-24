@@ -541,7 +541,7 @@ views:
           - type: tile
             entity: button.fotofeld_server_delete_all_duplicates_of_this_original
             hide_state: true
-            name: Delete all of this original's duplicates
+            name: Delete all duplicates
             icon: mdi:delete-sweep-outline
             color: red
             tap_action:
