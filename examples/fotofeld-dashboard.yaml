@@ -800,10 +800,14 @@ views:
               {% if people %}
               | Person | Photos |
               |---|---:|
-              {% for name, n in people.items() | sort(attribute='1', reverse=true) %}| {{ name }} | {{ n }} |
+              {% for name, n in people.items() | sort(attribute='1', reverse=true) %}| [{{ name }}](http://FOTOFELD-COMPUTER:8765/#people/{{ name | urlencode }}) | {{ n }} |
               {% endfor %}
               {% else %}
               Nobody is named yet. In the Fotofeld window: *People...*, give the face groups names, then *Analyze pictures*.
+              {% endif %}
+              {% if people %}
+
+              <sub>Tap a name to check and correct their faces in the Fotofeld web page (at home).</sub>
               {% endif %}
       - type: grid
         cards:
